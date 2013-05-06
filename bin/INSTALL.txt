@@ -1,0 +1,30 @@
+INSTALLING
+----------
+
+Compiler:
+
+  This uses clang. If you want to use a different compiler, change the CXX
+  variable in Makefile.
+
+Database library:
+
+  This uses kyotocabinet and assumes the dylib image can be found at
+
+    /usr/local/lib/libkyotocabinet.dylib
+
+  If you want to put it somewhere else or you are not on OS X, change the LIB
+  variable in Makefile to your preferred path.
+
+  kyotocabinet can be found here:
+
+    http://fallabs.com/kyotocabinet/
+
+once that is done run:
+
+$make
+
+If you have questions, email:
+
+nicholas [dot] esterer [at] gmail [dot] com
+
+Copyright (c) 2013 Nicholas Esterer. All rights reserved.

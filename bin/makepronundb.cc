@@ -8,19 +8,22 @@
 
 using namespace std;
 using namespace kyotocabinet;
+using namespace strops;
 
 int
 main (int argc, char **argv)
 {
   string s;
 
-  if (argc != 2) {
-    cerr << "Arguments are " << argv[0] << " and path to pronunciation dictionary."
-      << endl;
+  if (argc != 3) {
+    cerr << "Usage:\n" << argv[0] << " <path to destination database>" <<
+      " <path to pronunciation dictionary>\n"
+      "Text to analyse is given with stdin (see README)." << endl;
     return 1;
   }
 
-  // define a vistor that will put the matching pronunciation in the pron string
+  // define a vistor that will put the matching pronunciation in the
+  // pronunciation string
   class VisitorPron : public DB::Visitor {
     string val; // the resulting pronunciation
     // Call back when the pronunciation exists
@@ -40,17 +43,18 @@ main (int argc, char **argv)
     }
   };
 
-  // create db obj for pron
+  // create db obj for pronunciation dictionary (where the pronunciation is
+  // looked up)
   PolyDB cmudb;
-  // create the db for the pronunciation/pronun pairs
+  // create the db for the sentence/pronunciation pairs
   PolyDB prondb;
 
   // Open the dbs
-  if (!cmudb.open("../cmudict/cmudict.0.7a.kch")) {
+  if (!cmudb.open(argv[1])) {
     cerr << "open error: " << cmudb.error().name() << endl;
   }
 
-  if (!prondb.open(argv[1])) {
+  if (!prondb.open(argv[2])) {
     cerr << "open error: " << prondb.error().name() << endl;
   }
 
@@ -97,7 +101,7 @@ main (int argc, char **argv)
       // if pronunciation is "*" it means this sentence is not pronouncable
       if (visitor.get_val() == string("*")) {
         pronouncable = 0;
-        break;
+        break; // we don't store those
       }
       pronunciation.append(visitor.get_val());
       pronunciation.append(" | ");
@@ -106,10 +110,10 @@ main (int argc, char **argv)
       printf("| ");
     }
 
-    normalize_ws(pronunciation);
+    normalize_ws(pronunciation); // remove unnecessary whitespace
     
     if (pronouncable) {
-      // store the pronunciation and pronunciation
+      // store the sentence and pronunciation
       prondb.set(s.c_str(), pronunciation.c_str());
     }
 
@@ -118,6 +122,16 @@ main (int argc, char **argv)
 
     fflush(stdout);
   }
+
+  // close the dbs
+  if (!cmudb.close()) {
+    cerr << "close error: " << cmudb.error().name() << endl;
+  }
+
+  if (!prondb.close()) {
+    cerr << "close error: " << prondb.error().name() << endl;
+  }
+
 
   return 0;
 
